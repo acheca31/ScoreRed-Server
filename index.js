@@ -1,41 +1,22 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const mongoose = require('mongoose')
+const Customer = require('./models/customer')
 
 app.use(express.json())
 app.use(cors())
 app.use(express.static('dist'))
 
-let customers = [
-  {
-    "id": 1,
-    "phone": 123832023,
-    "firstname": "Andres",
-    "lastname": "Checa",
-    "subscription": true
-  },
-  {
-    "id": 2,
-    "phone": 8584738923,
-    "firstname": "Dewey",
-    "lastname": "Chex",
-    "subscription": false
-  },
-  {
-    "id": 3,
-    "phone": 98987856,
-    "firstname": "John",
-    "lastname": "Smith",
-    "subscription": true
-  }
-]
 
 app.get('/', (request, response) => {
   response.send('<h1>Hello World!</h1>')
 })
 
 app.get('/api/customers', (request, response) => {
-  response.json(customers)
+  Customer.find({}).then(customers => {
+    response.json(customers)
+  })
 })
 
 app.get('/api/customers/:id', (request, response) => {
