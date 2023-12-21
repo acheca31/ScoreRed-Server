@@ -1,76 +1,48 @@
+require('dotenv').config()
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const mongoose = require('mongoose')
+
+const customerRoutes = require('./routes/customerRoutes')
+const orderRoutes = require('./routes/orderRoutes')
+const productRoutes = require('./routes/productRoutes')
+
 const Customer = require('./models/customer')
+const Order = require('./models/order')
+const Product = require('./models/product')
 
-app.use(express.json())
-app.use(cors())
+
+// Initial Middleware
 app.use(express.static('dist'))
+app.use(express.json()) 
+app.use(cors())
 
 
-app.get('/', (request, response) => {
-  response.send('<h1>Hello World!</h1>')
-})
+// Routes
+app.use("/api/customers", customerRoutes)
+app.use("/api/orders", orderRoutes)
+app.use("/api/products", productRoutes)
 
-app.get('/api/customers', (request, response) => {
-  Customer.find({}).then(customers => {
-    response.json(customers)
-  })
-})
 
-app.get('/api/customers/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const customer = customers.find(customer => customer.id === id)
-
-    if (customer) {
-        response.json(customer)
-    } else {
-        response.status(404).end()
-    }
-})
-
-app.delete('/api/customers/:id', (request, response) => {
-    const id = Number(request.params.id)
-    customers = customers.filter(customer => customer.id !== id)
-  
-    response.status(204).end()
-})
-
-const generateId = () => {
-    const maxId = customers.length > 0
-      ? Math.max(...customers.map(n => n.id))
-      : 0
-    return maxId + 1
-}
-  
-app.post('/api/customers', (request, response) => {
-    const body = request.body
-  
-    if (!body.phone) {
-      return response.status(400).json({ 
-        error: 'phone missing' 
-      })
-    }
-  
-    const customer = {
-      phone: body.phone,  
-      firstname: body.firstname,
-      lastname: body.lastname,
-      subscription: body.subscription || false,
-      id: generateId(),
-    }
-  
-    customers = customers.concat(customer)
-  
-    response.json(customer)
-})
-
+// Error handling for unknown endpoint
 const unknownEndpoint = (request, response) => {
    response.status(404).send({ error: 'unknown endpoint' })
 }
   
 app.use(unknownEndpoint)
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  } 
+
+  next(error)
+}
+
+// this has to be the last loaded middleware.
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {

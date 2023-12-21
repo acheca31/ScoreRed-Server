@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 
 mongoose.set('strictQuery', false)
 
-
 const url = process.env.MONGODB_URI
 
 
@@ -17,23 +16,18 @@ mongoose.connect(url)
     console.log('error connecting to MongoDB:', error.message)
   })
 
-const customerSchema = new mongoose.Schema({
-    phone: {
+const orderSchema = new mongoose.Schema({
+    product: {
+      type: String,
+      required: true
+    },
+    quantity:  {
       type: Number,
       required: true
-    },
-    firstname: {
-      type: String,
-      required: true
-    },
-    lastname: {
-      type: String,
-      required: true
-    },
-    subscription: Boolean,
+    }
 })
   
-customerSchema.set('toJSON', {
+orderSchema.set('toJSON', {
     transform: (document, returnedObject) => {
       returnedObject.id = returnedObject._id.toString()
       delete returnedObject._id
@@ -41,4 +35,4 @@ customerSchema.set('toJSON', {
     }
 })
 
-module.exports = mongoose.model('Customer', customerSchema)
+module.exports = mongoose.model('Order', orderSchema)
